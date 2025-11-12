@@ -74,7 +74,7 @@ export const mockMessages: Message[] = [
   {
     id: '2',
     agent: 'Mike Davis',
-    preview: 'I have some great new listings that match your criteria',
+    preview: 'Would you like to schedule a viewing for the property?',
     time: 'Yesterday',
     unread: false
   },
