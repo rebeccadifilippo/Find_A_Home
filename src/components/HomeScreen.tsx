@@ -12,6 +12,7 @@ interface HomeScreenProps {
 export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showFilter, setShowFilter] = useState(false);
+  const [history, setHistory] = useState<number[]>([]);
 
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
@@ -20,14 +21,24 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProp
   const handleDragEnd = (event: any, info: any) => {
     if (info.offset.x > 100) {
       // Swiped right
+      setHistory((prev) => [...prev, currentIndex]);
       onSwipeRight(houses[currentIndex]);
       setCurrentIndex((prev) => Math.min(prev + 1, houses.length - 1));
     } else if (info.offset.x < -100) {
       // Swiped left
+      setHistory((prev) => [...prev, currentIndex]);
       onSwipeLeft(houses[currentIndex]);
       setCurrentIndex((prev) => Math.min(prev + 1, houses.length - 1));
     }
     x.set(0);
+  };
+
+  const handleBack = () => {
+    if (history.length > 0) {
+      const prevIndex = history[history.length - 1];
+      setHistory(history.slice(0, -1));
+      setCurrentIndex(prevIndex);
+    }
   };
 
   if (currentIndex >= houses.length) {
@@ -49,10 +60,19 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProp
   const currentHouse = houses[currentIndex];
 
   return (
-    <div className="flex-1 flex flex-col px-5 pt-5 pb-20">
+    <div className="flex-1 flex flex-col px-5 pt-5 pb-20 relative">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <div className="w-10" />
+        <button
+          onClick={handleBack}
+          disabled={history.length === 0}
+          className={`flex items-center gap-2 ${
+            history.length > 0 ? 'text-blue-600' : 'text-gray-400'
+          }`}
+        >
+          ← Back
+        </button>
+
         <button
           onClick={() => setShowFilter(!showFilter)}
           className="flex items-center gap-2 text-gray-700"
@@ -90,7 +110,7 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProp
                 <p className="text-blue-600 mb-2">${currentHouse.price.toLocaleString()}</p>
                 <p className="text-gray-800">{currentHouse.address}</p>
               </div>
-              
+
               <div className="flex gap-4 mb-4">
                 <div className="flex items-center gap-2 text-gray-600">
                   <Bed size={18} />
@@ -106,7 +126,15 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProp
                 </div>
               </div>
 
-              <p className="text-gray-600 text-sm">{currentHouse.description}</p>
+              <p className="text-gray-600 text-sm mb-4">{currentHouse.description}</p>
+
+              {/* Message Realtor Button */}
+              <button
+                onClick={() => alert(`Messaging realtor for ${currentHouse.address}`)}
+                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Message Realtor
+              </button>
             </div>
           </div>
         </motion.div>
@@ -114,8 +142,47 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProp
 
       {/* Instructions */}
       <div className="text-center mt-6 text-gray-600">
-        Swipe Right: Yes   |   Swipe Left: No
+        Swipe Right: Yes | Swipe Left: No
       </div>
+
+      {/* Filter Modal */}
+      {showFilter && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl w-80 p-5 shadow-xl">
+            <h2 className="text-lg font-semibold mb-4">Filter Homes</h2>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Max Price ($)</label>
+                <input type="number" className="w-full border rounded-lg p-2" placeholder="1000000" />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Bedrooms</label>
+                <input type="number" className="w-full border rounded-lg p-2" placeholder="3" />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Bathrooms</label>
+                <input type="number" className="w-full border rounded-lg p-2" placeholder="2" />
+              </div>
+            </div>
+
+            <div className="flex justify-end mt-5 gap-3">
+              <button onClick={() => setShowFilter(false)} className="text-gray-600">
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowFilter(false);
+                  // TODO: Apply filter logic here
+                }}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

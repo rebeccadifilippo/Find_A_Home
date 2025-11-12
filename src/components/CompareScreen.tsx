@@ -1,4 +1,5 @@
 import { X, Bed, Bath, Maximize } from 'lucide-react';
+import { useState } from 'react';
 import { House } from '../types';
 
 interface CompareScreenProps {
@@ -7,7 +8,15 @@ interface CompareScreenProps {
 }
 
 export function CompareScreen({ houses, onClose }: CompareScreenProps) {
-  const [house1, house2] = houses.slice(0, 2);
+  const [selectedHouses, setSelectedHouses] = useState<number[]>([0, 1]);
+
+  const handleHouseChange = (index: number, houseIndex: number) => {
+    const newSelection = [...selectedHouses];
+    newSelection[index] = houseIndex;
+    setSelectedHouses(newSelection);
+  };
+
+  const [house1, house2] = selectedHouses.map((index) => houses[index]);
 
   return (
     <div className="flex-1 flex flex-col px-5 pt-5 pb-20">
@@ -18,6 +27,32 @@ export function CompareScreen({ houses, onClose }: CompareScreenProps) {
         </button>
         <h1 className="text-gray-800">Compare Homes</h1>
         <div className="w-6" />
+      </div>
+
+      {/* Home Selection */}
+      <div className="flex justify-between mb-4">
+        <select
+          value={selectedHouses[0]}
+          onChange={(e) => handleHouseChange(0, parseInt(e.target.value))}
+          className="border border-gray-300 rounded px-2 py-1 text-sm"
+        >
+          {houses.map((house, index) => (
+            <option key={index} value={index}>
+              {house.address}
+            </option>
+          ))}
+        </select>
+        <select
+          value={selectedHouses[1]}
+          onChange={(e) => handleHouseChange(1, parseInt(e.target.value))}
+          className="border border-gray-300 rounded px-2 py-1 text-sm"
+        >
+          {houses.map((house, index) => (
+            <option key={index} value={index}>
+              {house.address}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Comparison Grid */}
