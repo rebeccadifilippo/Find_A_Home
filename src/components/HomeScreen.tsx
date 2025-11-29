@@ -13,6 +13,14 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProp
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showFilter, setShowFilter] = useState(false);
   const [history, setHistory] = useState<number[]>([]);
+  const [visibleHouses, setVisibleHouses] = useState(houses);
+
+  const [filters, setFilters] = useState({
+    maxPrice: 10000000,
+    bedrooms: 4,
+    bathrooms: 2,
+    maxSqft: 10000,
+  });
 
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
@@ -22,13 +30,13 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProp
     if (info.offset.x > 100) {
       // Swiped right
       setHistory((prev) => [...prev, currentIndex]);
-      onSwipeRight(houses[currentIndex]);
-      setCurrentIndex((prev) => Math.min(prev + 1, houses.length - 1));
+      onSwipeRight(visibleHouses[currentIndex]);
+      setCurrentIndex(prev => prev + 1);
     } else if (info.offset.x < -100) {
       // Swiped left
       setHistory((prev) => [...prev, currentIndex]);
-      onSwipeLeft(houses[currentIndex]);
-      setCurrentIndex((prev) => Math.min(prev + 1, houses.length - 1));
+      onSwipeLeft(visibleHouses[currentIndex]);
+      setCurrentIndex(prev => prev + 1);
     }
     x.set(0);
   };
@@ -41,7 +49,7 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProp
     }
   };
 
-  if (currentIndex >= houses.length) {
+  if (currentIndex >= visibleHouses.length) {
     return (
       <div className="flex-1 flex items-center justify-center px-6">
         <div className="text-center">
@@ -57,7 +65,22 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProp
     );
   }
 
-  const currentHouse = houses[currentIndex];
+  const currentHouse = visibleHouses[currentIndex];
+
+  const applyFilters = () => {
+    const newFiltered = houses.filter(h =>
+      h.price <= filters.maxPrice &&
+      h.bedrooms >= filters.bedrooms &&
+      h.bathrooms >= filters.bathrooms &&
+      h.sqft <= filters.maxSqft
+    );
+
+    setVisibleHouses(newFiltered);
+    setCurrentIndex(0);
+    setHistory([]);
+    setShowFilter(false);
+  };
+
 
   return (
     <div className="flex-1 flex flex-col px-5 pt-5 pb-20 relative">
@@ -66,9 +89,8 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProp
         <button
           onClick={handleBack}
           disabled={history.length === 0}
-          className={`flex items-center gap-2 ${
-            history.length > 0 ? 'text-blue-600' : 'text-gray-400'
-          }`}
+          className={`flex items-center gap-2 ${history.length > 0 ? 'text-blue-600' : 'text-gray-400'
+            }`}
         >
           ← Back
         </button>
@@ -85,7 +107,7 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProp
       {/* Card Stack */}
       <div className="flex-1 flex items-center justify-center relative">
         {/* Next card preview */}
-        {currentIndex < houses.length - 1 && (
+        {currentIndex < visibleHouses.length - 1 && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-full max-w-sm h-[500px] bg-gray-200 rounded-2xl" />
           </div>
@@ -103,6 +125,8 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProp
             <img
               src={currentHouse.image}
               alt={currentHouse.address}
+              draggable={false}
+              onDragStart={(e) => e.preventDefault()}
               className="w-full h-64 object-cover"
             />
             <div className="p-6">
@@ -148,34 +172,86 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProp
       {/* Filter Modal */}
       {showFilter && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl w-80 p-5 shadow-xl">
-            <h2 className="text-lg font-semibold mb-4">Filter Homes</h2>
+          <div className="bg-white rounded-2xl w-80 p-6 shadow-xl space-y-5"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                e.stopPropagation();
+                applyFilters();
+              };
+            }}>
+            <h2 className="text-xl font-semibold tracking-tight">Filter Homes</h2>
 
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Max Price ($)</label>
-                <input type="number" className="w-full border rounded-lg p-2" placeholder="1000000" />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Bedrooms</label>
-                <input type="number" className="w-full border rounded-lg p-2" placeholder="3" />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Bathrooms</label>
-                <input type="number" className="w-full border rounded-lg p-2" placeholder="2" />
-              </div>
+            {/* Max Price */}
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">
+                Max Price ($)
+              </label>
+              <input
+                type="number"
+                value={filters.maxPrice}
+                onChange={(e) => setFilters({ ...filters, maxPrice: Number(e.target.value) })}
+                className="w-full border border-gray-300 rounded-lg p-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                placeholder="1000000"
+              />
             </div>
 
-            <div className="flex justify-end mt-5 gap-3">
-              <button onClick={() => setShowFilter(false)} className="text-gray-600">
+            {/* Bedrooms */}
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">
+                Min Bedrooms
+              </label>
+              <input
+                type="number"
+                value={filters.bedrooms}
+                onChange={(e) => setFilters({ ...filters, bedrooms: Number(e.target.value) })}
+                className="w-full border border-gray-300 rounded-lg p-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                placeholder="3"
+              />
+            </div>
+
+            {/* Bathrooms */}
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">
+                Min Bathrooms
+              </label>
+              <input
+                type="number"
+                value={filters.bathrooms}
+                onChange={(e) => setFilters({ ...filters, bathrooms: Number(e.target.value) })}
+                className="w-full border border-gray-300 rounded-lg p-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                placeholder="2"
+              />
+            </div>
+
+            {/* Max Square Feet */}
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">
+                Max Square Feet
+              </label>
+              <input
+                type="number"
+                value={filters.maxSqft}
+                onChange={(e) => setFilters({ ...filters, maxSqft: Number(e.target.value) })}
+                className="w-full border border-gray-300 rounded-lg p-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                placeholder="3000"
+              />
+            </div>
+
+
+            {/* Buttons */}
+            <div className="flex justify-end gap-4 pt-2">
+              <button
+                onClick={() => { setShowFilter(false) }}
+                className="text-gray-600 hover:text-gray-800 transition"
+              >
                 Cancel
               </button>
+
               <button
-                onClick={() => {
-                  setShowFilter(false);
-                  // TODO: Apply filter logic here
-                }}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+                onClick={applyFilters}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
               >
                 Apply
               </button>
