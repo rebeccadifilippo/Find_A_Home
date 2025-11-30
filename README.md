@@ -1,7 +1,8 @@
 
-  ## Running the code
+# Welcome to Find a Home
 
-  Run `npm i` to install the dependencies.
+## Run the following commands below in your terminal
 
-  Run `npm run dev` to start the development server.
+`chmod +x run.sh`
+`./run.sh`
   
