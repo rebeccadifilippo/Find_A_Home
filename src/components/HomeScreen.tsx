@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { motion, useMotionValue, useTransform } from 'motion/react';
 import { SlidersHorizontal, Bed, Bath, Maximize } from 'lucide-react';
-import { House } from '../types';
+import { House, Message } from '../types';
 import { FilterPage } from './FilterPage';
 
 interface HomeScreenProps {
   houses: House[];
   onSwipeRight: (house: House) => void;
   onSwipeLeft: (house: House) => void;
+  onMessageRealtor: (message: Message) => void; // Add onMessageRealtor prop
 }
 
-export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProps) {
+export function HomeScreen({ houses, onSwipeRight, onSwipeLeft, onMessageRealtor }: HomeScreenProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [history, setHistory] = useState<number[]>([]);
   const [visibleHouses, setVisibleHouses] = useState(houses);
@@ -136,39 +137,42 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProp
           onDragEnd={handleDragEnd}
         >
           <div className="relative h-full">
-            <img
-              src={currentHouse.image}
-              alt={currentHouse.address}
-              draggable={false}
-              onDragStart={(e) => e.preventDefault()}
-              className="w-full h-64 object-cover"
-            />
-            <div className="p-6">
-              <div className="mb-4">
-                <p className="text-blue-600 mb-2">${currentHouse.price.toLocaleString()}</p>
-                <p className="text-gray-800">{currentHouse.address}</p>
+            {/* Swipeable Area */}
+            <div className="h-[400px]">
+              <img
+                src={currentHouse.image}
+                alt={currentHouse.address}
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
+                className="w-full h-64 object-cover"
+              />
+              <div className="p-6">
+                <div className="mb-4">
+                  <p className="text-blue-600 mb-2">${currentHouse.price.toLocaleString()}</p>
+                  <p className="text-gray-800">{currentHouse.address}</p>
+                </div>
+
+                <div className="flex gap-4 mb-4">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Bed size={18} />
+                    <span>{currentHouse.bedrooms} Beds</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Bath size={18} />
+                    <span>{currentHouse.bathrooms} Baths</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Maximize size={18} />
+                    <span>{currentHouse.sqft.toLocaleString()} sqft</span>
+                  </div>
+                </div>
               </div>
+            </div>
 
-              <div className="flex gap-4 mb-4">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Bed size={18} />
-                  <span>{currentHouse.bedrooms} Beds</span>
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Bath size={18} />
-                  <span>{currentHouse.bathrooms} Baths</span>
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Maximize size={18} />
-                  <span>{currentHouse.sqft.toLocaleString()} sqft</span>
-                </div>
-              </div>
-
-              <p className="text-gray-600 text-sm mb-4">{currentHouse.description}</p>
-
-              {/* Message Realtor Button */}
+            {/* Message Realtor Button */}
+            <div className="absolute bottom-0 w-full p-6">
               <button
-                onClick={() => alert(`Messaging realtor for ${currentHouse.address}`)}
+                onClick={() => onMessageRealtor()}
                 className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Message Realtor

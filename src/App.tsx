@@ -49,6 +49,10 @@ export default function App() {
     setActiveScreen('detail');
   };
 
+  const handleMessageRealtor = () => {
+    setActiveScreen('messages'); // Navigate to MessagesScreen
+  };
+
   const handleBack = () => {
     setActiveScreen('messages');
     setSelectedMessage(null);
@@ -62,6 +66,7 @@ export default function App() {
             houses={mockHouses}
             onSwipeRight={handleSwipeRight}
             onSwipeLeft={handleSwipeLeft}
+            onMessageRealtor={handleMessageRealtor} // Pass handler
           />
         )}
         
@@ -82,7 +87,7 @@ export default function App() {
         )}
         
         {activeScreen === 'detail' && selectedMessage && (
-          <MessageDetailScreen message={selectedMessage} onBack={handleBack} />
+          <MessageDetailScreen message={selectedMessage} onBack={() => setActiveScreen('home')} />
         )}
         
         {activeScreen === 'profile' && <ProfileScreen />}
