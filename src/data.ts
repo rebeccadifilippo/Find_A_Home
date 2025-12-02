@@ -96,6 +96,22 @@ export const mockMessages: Message[] = [
     unread: true,
     house: mockHouses[3], // Associate with the fourth house
   },
+  {
+    id: '5',
+    agent: 'Sophia Martinez',
+    preview: 'Please Message me if you have any questions about the property.',
+    time: 'Tuesday',
+    unread: true,
+    house: mockHouses[4], // Associate with the fifth house
+  },
+  {
+    id: '6',
+    agent: 'Liam Johnson',
+    preview: 'Please Message me if you have any questions about the property.',
+    time: 'Wednesday',
+    unread: true,
+    house: mockHouses[5], // Associate with the sixth house
+  },
 ];
 
 export const mockOpenHouses: OpenHouse[] = [
