@@ -4,9 +4,10 @@ import { Message } from '../types';
 interface MessagesScreenProps {
   messages: Message[];
   onCalendar: () => void;
+  onMessageSelect: (message: Message) => void; // Add this prop for navigation
 }
 
-export function MessagesScreen({ messages, onCalendar }: MessagesScreenProps) {
+export function MessagesScreen({ messages, onCalendar, onMessageSelect }: MessagesScreenProps) {
   return (
     <div className="flex-1 px-5 pt-5 pb-20">
       {/* Header */}
@@ -26,6 +27,7 @@ export function MessagesScreen({ messages, onCalendar }: MessagesScreenProps) {
         {messages.map((message) => (
           <div
             key={message.id}
+            onClick={() => onMessageSelect(message)} // Navigate to the detail screen
             className="bg-white rounded-xl p-4 shadow-md cursor-pointer hover:shadow-lg transition-shadow"
           >
             <div className="flex justify-between items-start mb-2">

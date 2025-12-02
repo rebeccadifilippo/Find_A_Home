@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, useMotionValue, useTransform } from 'motion/react';
 import { SlidersHorizontal, Bed, Bath, Maximize } from 'lucide-react';
 import { House } from '../types';
+import { FilterPage } from './FilterPage';
 
 interface HomeScreenProps {
   houses: House[];
@@ -11,9 +12,9 @@ interface HomeScreenProps {
 
 export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showFilter, setShowFilter] = useState(false);
   const [history, setHistory] = useState<number[]>([]);
   const [visibleHouses, setVisibleHouses] = useState(houses);
+  const [showFilterPage, setShowFilterPage] = useState(false);
 
   const [filters, setFilters] = useState({
     maxPrice: 10000000,
@@ -49,24 +50,6 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProp
     }
   };
 
-  if (currentIndex >= visibleHouses.length) {
-    return (
-      <div className="flex-1 flex items-center justify-center px-6">
-        <div className="text-center">
-          <p className="text-gray-600 mb-4">No more houses to view!</p>
-          <button
-            onClick={() => setCurrentIndex(0)}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg"
-          >
-            Start Over
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const currentHouse = visibleHouses[currentIndex];
-
   const applyFilters = () => {
     const newFiltered = houses.filter(h =>
       h.price <= filters.maxPrice &&
@@ -78,9 +61,40 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProp
     setVisibleHouses(newFiltered);
     setCurrentIndex(0);
     setHistory([]);
-    setShowFilter(false);
+    setShowFilterPage(false);
   };
 
+  if (showFilterPage) {
+    return (
+      <FilterPage
+        filters={filters}
+        setFilters={setFilters}
+        onApply={applyFilters}
+        onCancel={() => setShowFilterPage(false)}
+      />
+    );
+  }
+
+  if (currentIndex >= visibleHouses.length) {
+    return (
+      <div className="flex-1 flex items-center justify-center px-6">
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">No more houses to view!</p>
+          <button
+            onClick={() => {
+              setCurrentIndex(0); // Reset the index
+              setVisibleHouses(houses); // Restore the original list of houses
+            }}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Start Over
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const currentHouse = visibleHouses[currentIndex];
 
   return (
     <div className="flex-1 flex flex-col px-5 pt-5 pb-20 relative">
@@ -96,7 +110,7 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProp
         </button>
 
         <button
-          onClick={() => setShowFilter(!showFilter)}
+          onClick={() => setShowFilterPage(true)}
           className="flex items-center gap-2 text-gray-700"
         >
           <SlidersHorizontal size={20} />
@@ -168,97 +182,6 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft }: HomeScreenProp
       <div className="text-center mt-6 text-gray-600">
         Swipe Right: Yes | Swipe Left: No
       </div>
-
-      {/* Filter Modal */}
-      {showFilter && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl w-80 p-6 shadow-xl space-y-5"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                e.stopPropagation();
-                applyFilters();
-              };
-            }}>
-            <h2 className="text-xl font-semibold tracking-tight">Filter Homes</h2>
-
-            {/* Max Price */}
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">
-                Max Price ($)
-              </label>
-              <input
-                type="number"
-                value={filters.maxPrice}
-                onChange={(e) => setFilters({ ...filters, maxPrice: Number(e.target.value) })}
-                className="w-full border border-gray-300 rounded-lg p-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                placeholder="1000000"
-              />
-            </div>
-
-            {/* Bedrooms */}
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">
-                Min Bedrooms
-              </label>
-              <input
-                type="number"
-                value={filters.bedrooms}
-                onChange={(e) => setFilters({ ...filters, bedrooms: Number(e.target.value) })}
-                className="w-full border border-gray-300 rounded-lg p-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                placeholder="3"
-              />
-            </div>
-
-            {/* Bathrooms */}
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">
-                Min Bathrooms
-              </label>
-              <input
-                type="number"
-                value={filters.bathrooms}
-                onChange={(e) => setFilters({ ...filters, bathrooms: Number(e.target.value) })}
-                className="w-full border border-gray-300 rounded-lg p-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                placeholder="2"
-              />
-            </div>
-
-            {/* Max Square Feet */}
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">
-                Max Square Feet
-              </label>
-              <input
-                type="number"
-                value={filters.maxSqft}
-                onChange={(e) => setFilters({ ...filters, maxSqft: Number(e.target.value) })}
-                className="w-full border border-gray-300 rounded-lg p-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                placeholder="3000"
-              />
-            </div>
-
-
-            {/* Buttons */}
-            <div className="flex justify-end gap-4 pt-2">
-              <button
-                onClick={() => { setShowFilter(false) }}
-                className="text-gray-600 hover:text-gray-800 transition"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={applyFilters}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-              >
-                Apply
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -15,19 +15,21 @@ export function BottomNav({ activeScreen, onNavigate }: BottomNavProps) {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 h-16 flex items-center justify-around px-4">
-      {navItems.map(({ id, icon: Icon, label }) => (
-        <button
-          key={id}
-          onClick={() => onNavigate(id)}
-          className={`flex flex-col items-center justify-center gap-1 px-4 py-2 transition-colors ${
-            activeScreen === id ? 'text-blue-600' : 'text-gray-600'
-          }`}
-        >
-          <Icon size={20} />
-          <span className="text-xs">{label}</span>
-        </button>
-      ))}
+    <div className="fixed bottom-0 left-0 right-0 flex justify-center bg-white border-t border-gray-200">
+      <div className="max-w-md w-full h-16 flex items-center justify-around px-4">
+        {navItems.map(({ id, icon: Icon, label }) => (
+          <button
+            key={id}
+            onClick={() => onNavigate(id)}
+            className={`flex flex-col items-center justify-center gap-1 px-4 py-2 transition-colors ${
+              activeScreen === id ? 'text-blue-600' : 'text-gray-600'
+            }`}
+          >
+            <Icon size={20} />
+            <span className="text-xs">{label}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

@@ -5,4 +5,8 @@
 
 `chmod +x run.sh`
 `./run.sh`
+
+## TO HOST FROM PHONE
+
+npm run dev -- --host
   
