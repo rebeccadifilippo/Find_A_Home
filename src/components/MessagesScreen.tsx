@@ -27,7 +27,7 @@ export function MessagesScreen({ messages, onCalendar, onMessageSelect }: Messag
         {messages.map((message) => (
           <div
             key={message.id}
-            onClick={() => onMessageSelect(message)} // Navigate to the detail screen
+            onClick={() => onMessageSelect(message)}
             className="bg-white rounded-xl p-4 shadow-md cursor-pointer hover:shadow-lg transition-shadow"
           >
             <div className="flex justify-between items-start mb-2">
@@ -36,6 +36,8 @@ export function MessagesScreen({ messages, onCalendar, onMessageSelect }: Messag
                   <span className="text-gray-600">{message.agent.charAt(0)}</span>
                 </div>
                 <div className="flex-1">
+                  {/* Display house address above the agent's name */}
+                  <p className="text-gray-500 text-sm">{message.house.address}</p>
                   <div className="flex items-center gap-2">
                     <p className="text-gray-800">{message.agent}</p>
                     {message.unread && (

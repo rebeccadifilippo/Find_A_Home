@@ -66,25 +66,36 @@ export const mockHouses: House[] = [
 export const mockMessages: Message[] = [
   {
     id: '1',
-    agent: 'Sarah Johnson',
-    preview: 'The open house is scheduled for this Saturday at 2 PM',
+    agent: 'Piero Roppoli',
+    preview: 'Please Message me if you have any questions about the property.',
     time: '10:30 AM',
-    unread: true
+    unread: true,
+    house: mockHouses[0], // Associate with the first house
   },
   {
     id: '2',
-    agent: 'Mike Davis',
-    preview: 'Would you like to schedule a viewing for the property?',
+    agent: 'Erik Smith',
+    preview: 'Please Message me if you have any questions about the property.',
     time: 'Yesterday',
-    unread: false
+    unread: false,
+    house: mockHouses[1], // Associate with the second house
   },
   {
     id: '3',
-    agent: 'Emily Chen',
-    preview: 'The seller accepted your offer! Congratulations!',
+    agent: 'Brenna Williams',
+    preview: 'Please Message me if you have any questions about the property.',
     time: 'Monday',
-    unread: true
-  }
+    unread: true,
+    house: mockHouses[2], // Associate with the third house
+  },
+  {
+    id: '4',
+    agent: 'Julio Fernandez',
+    preview: 'Please Message me if you have any questions about the property.',
+    time: 'Monday',
+    unread: true,
+    house: mockHouses[3], // Associate with the fourth house
+  },
 ];
 
 export const mockOpenHouses: OpenHouse[] = [

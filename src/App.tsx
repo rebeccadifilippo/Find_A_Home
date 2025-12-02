@@ -7,14 +7,8 @@ import { MessageDetailScreen } from './components/MessageDetailScreen';
 import { ProfileScreen } from './components/ProfileScreen';
 import { CalendarScreen } from './components/CalendarScreen';
 import { BottomNav } from './components/BottomNav';
-import { mockHouses, mockOpenHouses } from './data';
+import { mockHouses, mockMessages, mockOpenHouses } from './data'; // Import mock data
 import { House, Screen, Message } from './types';
-
-const mockMessages: Message[] = [
-  { id: '1', agent: 'Sarah Johnson', preview: 'The open house is scheduled...', time: '10:30 AM', unread: true },
-  { id: '2', agent: 'Mike Davis', preview: 'Would you like to schedule...', time: 'Yesterday', unread: false },
-  { id: '3', agent: 'Emily Chen', preview: 'The seller accepted your offer!', time: 'Monday', unread: true },
-];
 
 export default function App() {
   const [activeScreen, setActiveScreen] = useState<Screen | 'detail'>('home');
@@ -81,7 +75,7 @@ export default function App() {
         
         {activeScreen === 'messages' && (
           <MessagesScreen
-            messages={mockMessages}
+            messages={mockMessages} // Use imported mockMessages
             onCalendar={handleCalendar}
             onMessageSelect={handleMessageSelect}
           />

@@ -25,7 +25,7 @@ export function CompareScreen({ houses, onClose }: CompareScreenProps) {
         <button onClick={onClose}>
           <X size={24} className="text-gray-700" />
         </button>
-        <h1 className="text-gray-800">Compare Homes</h1>
+        <h1 className="text-blue-600 text-3xl font-bold">Compare Homes</h1> {/* Updated title */}
         <div className="w-6" />
       </div>
 
@@ -34,22 +34,22 @@ export function CompareScreen({ houses, onClose }: CompareScreenProps) {
         <select
           value={selectedHouses[0]}
           onChange={(e) => handleHouseChange(0, parseInt(e.target.value))}
-          className="border border-gray-300 rounded px-2 py-1 text-sm"
+          className="border border-gray-300 rounded px-2 py-1 text-sm w-[45%] truncate"
         >
           {houses.map((house, index) => (
             <option key={index} value={index}>
-              {house.address}
+              {house.address.length > 25 ? `${house.address.slice(0, 25)}...` : house.address}
             </option>
           ))}
         </select>
         <select
           value={selectedHouses[1]}
           onChange={(e) => handleHouseChange(1, parseInt(e.target.value))}
-          className="border border-gray-300 rounded px-2 py-1 text-sm"
+          className="border border-gray-300 rounded px-2 py-1 text-sm w-[45%] truncate"
         >
           {houses.map((house, index) => (
             <option key={index} value={index}>
-              {house.address}
+              {house.address.length > 25 ? `${house.address.slice(0, 25)}...` : house.address}
             </option>
           ))}
         </select>
@@ -67,7 +67,10 @@ export function CompareScreen({ houses, onClose }: CompareScreenProps) {
           <div className="flex-1 p-3 flex flex-col gap-3">
             <div>
               <p className="text-blue-600 mb-1">${(house1.price / 1000).toFixed(0)}K</p>
-              <p className="text-gray-700 text-xs line-clamp-3">{house1.address}</p>
+              {/* Truncate address */}
+              <p className="text-gray-700 text-xs text-ellipsis overflow-hidden whitespace-nowrap">
+                {house1.address.length > 25 ? `${house1.address.slice(0, 25)}...` : house1.address}
+              </p>
             </div>
             
             <div className="space-y-2">
@@ -99,7 +102,10 @@ export function CompareScreen({ houses, onClose }: CompareScreenProps) {
           <div className="flex-1 p-3 flex flex-col gap-3">
             <div>
               <p className="text-blue-600 mb-1">${(house2.price / 1000).toFixed(0)}K</p>
-              <p className="text-gray-700 text-xs line-clamp-3">{house2.address}</p>
+              {/* Truncate address */}
+              <p className="text-gray-700 text-xs text-ellipsis overflow-hidden whitespace-nowrap">
+                {house2.address.length > 25 ? `${house2.address.slice(0, 25)}...` : house2.address}
+              </p>
             </div>
             
             <div className="space-y-2">

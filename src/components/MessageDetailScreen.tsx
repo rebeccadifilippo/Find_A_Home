@@ -18,29 +18,19 @@ export function MessageDetailScreen({ message, onBack }: MessageDetailScreenProp
   const handleSendMessage = () => {
     if (!userMessage.trim()) return;
 
-    // Create both message objects
     const newUserMessage = { sender: 'user', text: userMessage };
     const newAgentMessage = { sender: 'agent', text: 'Feature coming soon: Messaging functionality.' };
 
-    // Update state ONCE with both messages to prevent overwriting/race conditions
-    setChatHistory((prev) => [
-      ...prev, 
-      newUserMessage, 
-      newAgentMessage
-    ]);
-
-    // Clear input
+    setChatHistory((prev) => [...prev, newUserMessage, newAgentMessage]);
     setUserMessage('');
   };
 
-  // Allow sending with Enter key
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSendMessage();
     }
   };
 
-  // Scroll to bottom on new message
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
@@ -57,11 +47,13 @@ export function MessageDetailScreen({ message, onBack }: MessageDetailScreenProp
         >
           <ArrowLeft size={24} />
         </button>
-        <h1 className="text-lg font-semibold">{message.agent}</h1>
+        <div className="flex flex-col">
+          <h1 className="text-3xl font-bold">{message.agent}</h1> {/* Larger and bolded name */}
+          <p className="text-2xl font-bold">{message.house.address}</p> {/* Slightly larger address */}
+        </div>
       </div>
 
-      {/* Chat Content 
-      */}
+      {/* Chat Content */}
       <div
         ref={chatContainerRef}
         className="flex-1 p-4 space-y-4 overflow-y-auto bg-gray-50 flex flex-col"
@@ -75,7 +67,6 @@ export function MessageDetailScreen({ message, onBack }: MessageDetailScreenProp
                 : 'bg-white text-gray-800 mr-auto border border-gray-200 rounded-bl-none' // Agent: White, Left aligned
             }`}
           >
-            {/* break-words ensures long strings don't overflow the bubble */}
             <p className="break-words">{chat.text}</p>
           </div>
         ))}
