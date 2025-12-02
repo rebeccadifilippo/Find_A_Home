@@ -1,12 +1,23 @@
+import { useState } from 'react';
 import { X, MapPin, Clock, Bed, Bath } from 'lucide-react';
 import { OpenHouse } from '../types';
 
 interface CalendarScreenProps {
   openHouses: OpenHouse[];
-  onClose: () => void;
+  onClose: () => void; // Callback to navigate back to Open Houses page
 }
 
 export function CalendarScreen({ openHouses, onClose }: CalendarScreenProps) {
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const handleAddToCalendar = () => {
+    setSuccessMessage('Added to Outlook Calendar Successfully');
+    setTimeout(() => {
+      setSuccessMessage(null);
+      onClose(); // Navigate back to the Open Houses page
+    }, 2000); // Show the message for 2 seconds
+  };
+
   return (
     <div className="flex-1 px-5 pt-5 pb-20">
       {/* Header */}
@@ -17,6 +28,13 @@ export function CalendarScreen({ openHouses, onClose }: CalendarScreenProps) {
         <h1 className="text-gray-800">Open Houses</h1>
         <div className="w-6" />
       </div>
+
+      {/* Success Message */}
+      {successMessage && (
+        <div className="mb-4 p-4 bg-green-100 text-green-800 rounded-lg shadow-md">
+          {successMessage}
+        </div>
+      )}
 
       {/* Open Houses List */}
       <div className="space-y-4">
@@ -59,7 +77,10 @@ export function CalendarScreen({ openHouses, onClose }: CalendarScreenProps) {
               </div>
             </div>
             <div className="px-4 pb-4">
-              <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">
+              <button
+                onClick={handleAddToCalendar}
+                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 Add to Calendar
               </button>
             </div>
