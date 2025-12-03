@@ -49,8 +49,31 @@ export default function App() {
     setActiveScreen('detail');
   };
 
-  const handleMessageRealtor = () => {
-    setActiveScreen('messages'); // Navigate to MessagesScreen
+  // When user wants to message the realtor for a specific house,
+  // find an existing message thread for that house and open it.
+  const handleMessageRealtor = (house: House) => {
+    // Try to find a message associated with this house
+    const msg = mockMessages.find(m => (m as any).house?.id === house.id);
+    if (msg) {
+      setSelectedMessage(msg as Message);
+      setActiveScreen('detail');
+      return;
+    }
+
+    // If none exists, create a temporary message object and open it
+    const newMsg: Message = {
+      id: `temp-${house.id}`,
+      agent: 'Listing Agent',
+      preview: `Hi, I'm interested in ${house.address}`,
+      time: 'Now',
+      unread: false,
+      // attach house for display in message detail (loose typing)
+      // @ts-ignore
+      house,
+    } as any;
+
+    setSelectedMessage(newMsg);
+    setActiveScreen('detail');
   };
 
   const handleBack = () => {
@@ -66,7 +89,7 @@ export default function App() {
             houses={mockHouses}
             onSwipeRight={handleSwipeRight}
             onSwipeLeft={handleSwipeLeft}
-            onMessageRealtor={handleMessageRealtor} // Pass handler
+            onMessageRealtor={handleMessageRealtor} // Pass handler accepts House
           />
         )}
         

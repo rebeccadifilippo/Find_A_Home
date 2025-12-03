@@ -1,6 +1,8 @@
 export interface House {
   id: string;
   image: string;
+  // Optional array of images to support multiple photos per house
+  images?: string[];
   price: number;
   address: string;
   bedrooms: number;
@@ -15,6 +17,8 @@ export interface Message {
   preview: string;
   time: string;
   unread: boolean;
+  // Optionally associate a message with a house
+  house?: House;
 }
 
 export interface OpenHouse {

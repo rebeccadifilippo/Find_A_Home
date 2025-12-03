@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, useMotionValue, useTransform } from 'motion/react';
 import { SlidersHorizontal, Bed, Bath, Maximize } from 'lucide-react';
 import { House, Message } from '../types';
@@ -8,13 +8,24 @@ interface HomeScreenProps {
   houses: House[];
   onSwipeRight: (house: House) => void;
   onSwipeLeft: (house: House) => void;
-  onMessageRealtor: (message: Message) => void; // Add onMessageRealtor prop
+  onMessageRealtor: (house: House) => void; // Add onMessageRealtor prop (now accepts house)
 }
 
 export function HomeScreen({ houses, onSwipeRight, onSwipeLeft, onMessageRealtor }: HomeScreenProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    try {
+      const lastId = localStorage.getItem('findahome.lastHouseId');
+      if (!lastId) return 0;
+      const idx = houses.findIndex((h) => h.id === lastId);
+      return idx >= 0 ? idx : 0;
+    } catch (e) {
+      return 0;
+    }
+  });
   const [history, setHistory] = useState<number[]>([]);
   const [visibleHouses, setVisibleHouses] = useState(houses);
+  // Track per-house image index so tapping cycles photos for each house independently
+  const [imageIndices, setImageIndices] = useState<Record<string, number>>({});
   const [showFilterPage, setShowFilterPage] = useState(false);
 
   const [filters, setFilters] = useState({
@@ -27,6 +38,8 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft, onMessageRealtor
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
   const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
+
+
 
   const handleDragEnd = (event: any, info: any) => {
     if (info.offset.x > 100) {
@@ -51,19 +64,68 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft, onMessageRealtor
     }
   };
 
-  const applyFilters = () => {
-    const newFiltered = houses.filter(h =>
-      h.price <= filters.maxPrice &&
-      h.bedrooms >= filters.bedrooms &&
-      h.bathrooms >= filters.bathrooms &&
-      h.sqft <= filters.maxSqft
-    );
+  const applyFilters = (newFilters?: typeof filters) => {
+    // Use provided filters or current filters state
+    const filtersToApply = newFilters || filters;
+    
+    const newFiltered = houses.filter(h => {
+      // maxPrice: 0 means no limit, otherwise check
+      if (filtersToApply.maxPrice > 0 && h.price > filtersToApply.maxPrice) return false;
+      // bedrooms: 0 means any, otherwise must be >= selected
+      if (filtersToApply.bedrooms > 0 && h.bedrooms < filtersToApply.bedrooms) return false;
+      // bathrooms: 0 means any, otherwise must be >= selected
+      if (filtersToApply.bathrooms > 0 && h.bathrooms < filtersToApply.bathrooms) return false;
+      // maxSqft: 0 means no limit, otherwise check
+      if (filtersToApply.maxSqft > 0 && h.sqft > filtersToApply.maxSqft) return false;
+      return true;
+    });
+
+    // When applying filters, try to preserve the last-saved house if it's still visible
+    const lastId = (() => {
+      try {
+        return localStorage.getItem('findahome.lastHouseId');
+      } catch (e) {
+        return null;
+      }
+    })();
+
+    let startIndex = 0;
+    if (lastId) {
+      const found = newFiltered.findIndex((h) => h.id === lastId);
+      if (found >= 0) startIndex = found;
+    }
+
+    // Update filters state if new filters provided
+    if (newFilters) {
+      setFilters(newFilters);
+    }
 
     setVisibleHouses(newFiltered);
-    setCurrentIndex(0);
+    setCurrentIndex(startIndex);
     setHistory([]);
     setShowFilterPage(false);
   };
+
+  // determine current house and reset its image index when active
+  const currentHouse = visibleHouses[currentIndex];
+
+  useEffect(() => {
+    if (!visibleHouses || !visibleHouses[currentIndex]) return;
+    const ch = visibleHouses[currentIndex];
+    setImageIndices(prev => ({ ...prev, [ch.id]: 0 }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex, visibleHouses]);
+
+  // Persist the last viewed house id so we can restore on reload
+  useEffect(() => {
+    try {
+      if (visibleHouses && visibleHouses[currentIndex]) {
+        localStorage.setItem('findahome.lastHouseId', visibleHouses[currentIndex].id);
+      }
+    } catch (e) {
+      // ignore localStorage errors
+    }
+  }, [currentIndex, visibleHouses]);
 
   if (showFilterPage) {
     return (
@@ -94,8 +156,7 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft, onMessageRealtor
       </div>
     );
   }
-
-  const currentHouse = visibleHouses[currentIndex];
+  
 
   return (
     <div className="flex-1 flex flex-col px-5 pt-5 pb-20 relative">
@@ -139,13 +200,43 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft, onMessageRealtor
           <div className="relative h-full">
             {/* Swipeable Area */}
             <div className="h-[400px]">
-              <img
-                src={currentHouse.image}
-                alt={currentHouse.address}
-                draggable={false}
-                onDragStart={(e) => e.preventDefault()}
-                className="w-full h-64 object-cover"
-              />
+              {/* Use `images` array if present, otherwise fall back to single `image` */}
+              {(() => {
+                const imgs = (currentHouse as any).images ?? [currentHouse.image];
+                const idx = imageIndices[currentHouse.id] ?? 0;
+                const src = imgs[idx % imgs.length];
+
+                return (
+                  <div className="relative">
+                    <img
+                      src={src}
+                      alt={currentHouse.address}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
+                      onClick={() => {
+                        if (imgs.length <= 1) return;
+                        setImageIndices(prev => ({
+                          ...prev,
+                          [currentHouse.id]: ((prev[currentHouse.id] ?? 0) + 1) % imgs.length
+                        }));
+                      }}
+                      className="w-full h-64 object-cover cursor-pointer"
+                    />
+
+                    {/* Dots indicator */}
+                    {imgs.length > 1 && (
+                      <div className="absolute left-4 bottom-3 flex gap-2 items-center">
+                        {imgs.map((_: string, i: number) => (
+                          <span
+                            key={i}
+                            className={`h-2 w-2 rounded-full ${i === idx ? 'bg-white' : 'bg-white/50'}`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
               <div className="p-6">
                 <div className="mb-4">
                   <p className="text-blue-600 mb-2">${currentHouse.price.toLocaleString()}</p>
@@ -172,7 +263,7 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft, onMessageRealtor
             {/* Message Realtor Button */}
             <div className="absolute bottom-0 w-full p-6">
               <button
-                onClick={() => onMessageRealtor()}
+                onClick={() => onMessageRealtor(currentHouse)}
                 className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Message Realtor
@@ -184,7 +275,7 @@ export function HomeScreen({ houses, onSwipeRight, onSwipeLeft, onMessageRealtor
 
       {/* Instructions */}
       <div className="text-center mt-6 text-gray-600">
-        Swipe Right: Yes | Swipe Left: No
+        Swipe Right: Save | Swipe Left: Discard | Tap Photo to Cycle
       </div>
     </div>
   );

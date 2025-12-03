@@ -14,7 +14,12 @@ interface FilterPageProps {
     bathrooms: number;
     maxSqft: number;
   }) => void;
-  onApply: () => void;
+  onApply: (filters: {
+    maxPrice: number;
+    bedrooms: number;
+    bathrooms: number;
+    maxSqft: number;
+  }) => void;
   onCancel: () => void;
 }
 
@@ -22,8 +27,8 @@ export function FilterPage({ filters, setFilters, onApply, onCancel }: FilterPag
   const [localFilters, setLocalFilters] = useState(filters);
 
   const handleApply = () => {
-    setFilters(localFilters);
-    onApply();
+    // Pass the selected filters directly to onApply so parent applies them immediately
+    onApply(localFilters);
   };
 
   const handleClear = () => {
